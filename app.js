@@ -20,6 +20,7 @@ const FINGER_NAMES = ['Cái', 'Trỏ', 'Giữa', 'Áp út', 'Út'];
 let hands = null;
 let camera = null;
 let running = false;
+let isProcessing = false;
 
 // Áp dụng mirror cho canvas
 function applyMirror() {
@@ -173,32 +174,62 @@ btnStart.addEventListener('click', async () => {
     btnStart.disabled = true;
     await initHands();
 
-    if (typeof Camera === 'undefined') {
-      throw new Error('Không tải được camera_utils. Kiểm tra mạng.');
-    }
+    try {
+      if (hands && hands.reset) {
+        hands.reset();
+      }
+    } catch (e) {}
 
-    let isProcessing = false;
-    camera = new Camera(videoEl, {
-      onFrame: async () => {
-        if (running && !isProcessing) {
-          isProcessing = true;
-          await hands.send({ image: videoEl });
-          isProcessing = false;
-        }
-      },
-      facingMode: 'user',
-      width: 1280,
-      height: 720
+    // Thay vì dùng Camera của MediaPipe (gây lỗi khi restart), ta tự viết luồng camera:
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } }
     });
-
+    videoEl.srcObject = stream;
+    
+    // Đợi video thực sự có kích thước
+    await new Promise((resolve) => {
+      if (videoEl.readyState >= 1) {
+        resolve();
+      } else {
+        videoEl.onloadedmetadata = () => {
+          resolve();
+        };
+      }
+    });
+    
+    await videoEl.play();
     running = true;
     scanningOverlay.classList.remove('hidden');
-    await camera.start();
-    // video element cần play (một số trình duyệt)
-    try { await videoEl.play(); } catch (e) {}
-
     statusEl.textContent = 'Camera đã bật — giơ tay lên!';
     btnStop.disabled = false;
+
+    // Vòng lặp xử lý frame
+    const processFrame = async () => {
+      if (!running) return;
+      
+      if (!isProcessing && videoEl.readyState >= 2 && videoEl.videoWidth > 0) {
+        isProcessing = true;
+        try {
+          // Gửi ảnh cho MediaPipe
+          await hands.send({ image: videoEl });
+        } catch (e) {
+          console.error("Lỗi khi gửi ảnh cho MediaPipe:", e);
+        } finally {
+          isProcessing = false;
+        }
+      }
+      
+      // Tiếp tục lặp
+      if (videoEl.requestVideoFrameCallback) {
+        videoEl.requestVideoFrameCallback(processFrame);
+      } else {
+        requestAnimationFrame(processFrame);
+      }
+    };
+    
+    // Bắt đầu lặp
+    processFrame();
+
   } catch (err) {
     console.error(err);
     statusEl.textContent = 'Lỗi: ' + err.message;
@@ -211,6 +242,7 @@ btnStart.addEventListener('click', async () => {
 
 btnStop.addEventListener('click', () => {
   running = false;
+  isProcessing = false;
   try { camera?.stop(); } catch (e) {}
   const stream = videoEl.srcObject;
   if (stream) stream.getTracks().forEach(t => t.stop());
