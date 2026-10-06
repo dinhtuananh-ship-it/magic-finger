@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finger Count AI</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@400;600;800&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css" />
+  <!-- MediaPipe -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+</head>
+
+<body>
+  <!-- Animated background -->
+  <div class="bg-shape shape-1"></div>
+  <div class="bg-shape shape-2"></div>
+  <div class="bg-shape shape-3"></div>
+
+  <div class="container">
+    <header>
+      <div class="badge">AI Powered</div>
+      <h1>Nhận Diện Ngón Tay</h1>
+      <p>Giơ tay trước camera — AI sẽ đoán bạn đang giơ <b>số mấy</b></p>
+    </header>
+
+    <div class="main">
+      <div class="video-section">
+        <div class="video-wrap glass-panel">
+          <video id="video" playsinline muted autoplay></video>
+          <canvas id="canvas" width="1280" height="720"></canvas>
+          <div id="status" class="status">Chưa bật camera</div>
+          <!-- Scanning overlay -->
+          <div id="scanning-overlay" class="scanning-line hidden"></div>
+        </div>
+
+        <div class="controls glass-panel">
+          <button id="btnStart" class="btn primary">
+            <span class="icon">📷</span> Bật Camera
+          </button>
+          <button id="btnStop" class="btn secondary" disabled>
+            <span class="icon">⏹</span> Dừng
+          </button>
+          <label class="mirror-toggle">
+            <input type="checkbox" id="mirror" checked />
+            <span class="toggle-switch"></span>
+            Lật ảnh selfie
+          </label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="big-number-wrap glass-panel">
+          <div class="label">TỔNG SỐ NGÓN ĐANG GIƠ</div>
+          <div id="bigNumber" class="big-number pop-anim">–</div>
+          <div id="detail" class="detail">Hãy bật camera và giơ tay</div>
+        </div>
+
+        <div class="cards">
+          <div class="card glass-panel">
+            <div class="card-header">
+              <span class="hand-icon">✋</span>
+              <div class="card-title">Tay Trái</div>
+            </div>
+            <div id="leftCount" class="card-number pop-anim">–</div>
+            <div id="leftFingers" class="card-fingers">—</div>
+          </div>
+
+          <div class="card glass-panel">
+            <div class="card-header">
+              <span class="hand-icon">🤚</span>
+              <div class="card-title">Tay Phải</div>
+            </div>
+            <div id="rightCount" class="card-number pop-anim">–</div>
+            <div id="rightFingers" class="card-fingers">—</div>
+          </div>
+        </div>
+
+        <div class="hint glass-panel">
+          <b><span class="icon">💡</span> Mẹo để nhận diện chuẩn:</b>
+          <ul>
+            <li>Đủ ánh sáng, nền đơn giản</li>
+            <li>Giơ tay thẳng, cách camera 40–80cm</li>
+            <li>Xòe rõ các ngón, đừng che ngón khác</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p>Chạy 100% trên trình duyệt với MediaPipe Hands • Không gửi video lên server</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
