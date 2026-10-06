@@ -174,10 +174,7 @@ canvas {
   border-radius: 18px;
 }
 
-video {
-  transform: scaleX(-1);
-}
-
+video.mirror,
 canvas.mirror {
   transform: scaleX(-1);
 }

@@ -23,8 +23,13 @@ let running = false;
 
 // Áp dụng mirror cho canvas
 function applyMirror() {
-  if (mirrorCheckbox.checked) canvasEl.classList.add('mirror');
-  else canvasEl.classList.remove('mirror');
+  if (mirrorCheckbox.checked) {
+    canvasEl.classList.add('mirror');
+    videoEl.classList.add('mirror');
+  } else {
+    canvasEl.classList.remove('mirror');
+    videoEl.classList.remove('mirror');
+  }
 }
 mirrorCheckbox.addEventListener('change', applyMirror);
 applyMirror();
@@ -77,6 +82,12 @@ function updateNumberWithAnimation(el, newValue) {
 }
 
 function onResults(results) {
+  // Cập nhật kích thước canvas theo video thực tế để tránh méo ảnh trên mobile
+  if (canvasEl.width !== results.image.width || canvasEl.height !== results.image.height) {
+    canvasEl.width = results.image.width;
+    canvasEl.height = results.image.height;
+  }
+
   ctx.save();
   ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
 
@@ -175,6 +186,7 @@ btnStart.addEventListener('click', async () => {
           isProcessing = false;
         }
       },
+      facingMode: 'user',
       width: 1280,
       height: 720
     });
